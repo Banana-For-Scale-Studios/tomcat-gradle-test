@@ -1,0 +1,99 @@
+apply plugin: 'war'
+apply plugin: 'tomcat'
+
+sourceCompatibility = 1.7
+version = '1.0'
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '1.9'
+}
+
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath group: 'org.gradle.api.plugins', name:'gradle-tomcat-plugin', version: '1.0'
+        classpath group: 'org.springframework', name: 'spring-instrument-tomcat', version: '3.2.5.RELEASE'
+    }
+}
+repositories {
+    mavenCentral()
+}
+dependencies {
+    def springVersion = '3.2.5.RELEASE'
+    def jacksonVersion = '2.3.0'
+    def hibernateVersion = '4.3.0.Final'
+    def tomcatVersion = '7.0.11'
+    def aspectjVersion = '1.7.4'
+
+    compile group: 'com.jayway.restassured', name: 'rest-assured', version: '2.1.0'
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    providedCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
+    testCompile group: 'org.springframework', name:'spring-test', version: springVersion
+    compile group: 'org.springframework', name: 'spring-webmvc', version: springVersion
+    compile group: 'org.springframework', name: 'spring-orm', version: springVersion
+    compile group: 'org.springframework', name: 'spring-aspects', version: springVersion
+    compile group: 'org.aspectj', name: 'aspectjrt', version: aspectjVersion
+    compile group: 'org.aspectj', name: 'aspectjweaver', version: aspectjVersion
+    compile group: 'org.springframework', name: 'spring-aop', version: springVersion
+    compile group: 'org.hibernate', name: 'hibernate-core', version: hibernateVersion
+    compile group: 'org.hibernate', name: 'hibernate-entitymanager', version: hibernateVersion
+    compile group: 'commons-dbcp', name: 'commons-dbcp', version: '1.4'
+    compile group: 'log4j', name: 'log4j', version: '1.2.17'
+    runtime group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion
+    runtime group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
+    runtime group: 'mysql', name:'mysql-connector-java', version: '5.1.26'
+
+    tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
+           "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
+           files("spring-instrument-tomcat-3.2.5.RELEASE.jar")
+    tomcat("org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}") {
+        exclude group: 'org.eclipse.jdt.core.compiler', module: 'ecj'
+    }
+}
+
+test {
+    maxParallelForks = 5
+    forkEvery = 50
+    include '**/test/unit/*.*'
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}
+
+ext {
+    tomcatStopPort = 8092
+    tomcatStopKey = 'stopKey'
+}
+
+task integrationTomcatRun(type: org.gradle.api.plugins.tomcat.TomcatRunWar) {
+    outputFile = file("integration_tomcat.log")
+    contextPath = ""
+    stopPort = tomcatStopPort
+    stopKey = tomcatStopKey
+    httpPort = 8090
+    httpsPort = 8091
+    daemon = true
+    doFirst{
+        println "Starting embedded Tomcat instance"
+    }
+}
+
+task integrationTomcatStop(type: org.gradle.api.plugins.tomcat.TomcatStop) {
+    stopPort = tomcatStopPort
+    stopKey = tomcatStopKey
+    doFirst{
+        println "Stopping embedded Tomcat instance"
+    }
+}
+
+task integrationTest(type: Test) {
+    include '**/test/integration/*.*'
+    dependsOn integrationTomcatRun
+    finalizedBy integrationTomcatStop
+    testLogging {
+        events "passed", "skipped", "failed"
+    }
+}

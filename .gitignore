@@ -1,5 +1,12 @@
 *.class
-
+.idea
+.gradle
+build
+classes
+out
+*.log
+*.lck
+*.iml
 # Package Files #
 *.jar
 *.war
