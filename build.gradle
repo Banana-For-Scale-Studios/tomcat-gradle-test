@@ -15,12 +15,15 @@ buildscript {
     }
     dependencies {
         classpath group: 'org.gradle.api.plugins', name:'gradle-tomcat-plugin', version: '1.0'
-        classpath group: 'org.springframework', name: 'spring-instrument-tomcat', version: '3.2.5.RELEASE'
     }
 }
 repositories {
     mavenCentral()
 }
+
+configurations.compile.exclude (group: 'org.hibernate.javax.persistence', module: 'hibernate-jpa-2.0-api')
+configurations.tomcat.exclude (group: 'org.eclipse.jdt.core.compiler', module: 'ecj')
+
 dependencies {
     def springVersion = '3.2.5.RELEASE'
     def jacksonVersion = '2.3.0'
@@ -35,20 +38,23 @@ dependencies {
     compile group: 'org.springframework', name: 'spring-webmvc', version: springVersion
     compile group: 'org.springframework', name: 'spring-orm', version: springVersion
     compile group: 'org.springframework', name: 'spring-aspects', version: springVersion
+    compile group: 'org.springframework', name: 'spring-aop', version: springVersion
+
     compile group: 'org.aspectj', name: 'aspectjrt', version: aspectjVersion
     compile group: 'org.aspectj', name: 'aspectjweaver', version: aspectjVersion
-    compile group: 'org.springframework', name: 'spring-aop', version: springVersion
+
     compile group: 'org.hibernate', name: 'hibernate-core', version: hibernateVersion
     compile group: 'org.hibernate', name: 'hibernate-entitymanager', version: hibernateVersion
     compile group: 'commons-dbcp', name: 'commons-dbcp', version: '1.4'
     compile group: 'log4j', name: 'log4j', version: '1.2.17'
+
     runtime group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: jacksonVersion
     runtime group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: jacksonVersion
+
     runtime group: 'mysql', name:'mysql-connector-java', version: '5.1.26'
 
     tomcat "org.apache.tomcat.embed:tomcat-embed-core:${tomcatVersion}",
-           "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}",
-           files("spring-instrument-tomcat-3.2.5.RELEASE.jar")
+           "org.apache.tomcat.embed:tomcat-embed-logging-juli:${tomcatVersion}"
     tomcat("org.apache.tomcat.embed:tomcat-embed-jasper:${tomcatVersion}") {
         exclude group: 'org.eclipse.jdt.core.compiler', module: 'ecj'
     }

@@ -7,7 +7,7 @@
 ##############################################################################
 
 # Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
-DEFAULT_JVM_OPTS="-XX:PermSize=64M -XX:MaxPermSize=256m"
+DEFAULT_JVM_OPTS="-XX:MaxPermSize=512m -javaagent:c:/repos/tomcat-gradle-test/spring-instrument-3.2.5.RELEASE.jar"
 
 APP_NAME="Gradle"
 APP_BASE_NAME=`basename "$0"`
